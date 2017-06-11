@@ -75,9 +75,13 @@ module Reek
       #
       # @return true if the module is a namespace module
       def namespace_module?
-        return false if exp.type == :casgn
-        contents = exp.children.last
-        contents && contents.find_nodes([:def, :defs], [:casgn, :class, :module]).empty?
+        children = direct_children
+        children.any? && children.all? { |child| [:casgn, :class, :module].include? child.type }
+      end
+
+      def direct_children
+        contents = exp.children.last or return []
+        contents.type == :begin ? contents.children : [contents]
       end
 
       def track_visibility(visibility, names)
